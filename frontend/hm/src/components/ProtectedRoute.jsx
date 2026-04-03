@@ -3,12 +3,13 @@ import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
 
 const ProtectedRoute = () => {
-   let {user}= useSelector((state)=>state.auth);
+  const { user } = useSelector((state) => state.auth)
 
-   if(!user){
-    return <Navigate to="/"/>
-   }
-  return <Outlet /> 
+  if (user===null) {
+    return <Navigate to="/auth" replace />
+  }
+
+  return <Outlet />
 }
 
 export default ProtectedRoute

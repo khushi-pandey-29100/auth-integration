@@ -10,29 +10,35 @@ import { useDispatch } from 'react-redux';
 import Mens from '../pages/Mens';
 import Womens from '../pages/Womens';
 import Kids from '../pages/Kids';
+import Cart from "../pages/Cart";
+import LandingPage from '../pages/LandingPage';
 import CreateProduct from '../pages/CreateProduct';
 
 const Approuter = () => {
-  const dispatch=useDispatch();
-  
-  useEffect(()=>{
-    (async()=>{
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    (async () => {
       try {
-        let res= await axiosInstance.get("auth/current-user",{
-          withCredentials:true,
+        let res = await axiosInstance.get("auth/current-user", {
+          withCredentials: true,
         })
-        if(res){
+        if (res) {
           dispatch(setUser(res.data.user));
         }
       } catch (error) {
-        console.log("error in current user api",error)
+        console.log("error in current user api", error)
       }
     })();
-  },[])
+  }, [dispatch])
 
   const router = createBrowserRouter([
     {
-      path: '/',
+      path: "/",
+      element: <LandingPage />,
+    },
+    {
+      path: '/auth',
       element: <PublicRoute />,
       children: [
         {
@@ -48,22 +54,26 @@ const Approuter = () => {
         {
           path: '',
           element: <HomeLayout />,
-          children:[
+          children: [
             {
-              path:"",
-              element:<Womens />
+              path: "",
+              element: <Womens />
             },
             {
-              path:"mens",
-              element:<Mens /> 
+              path: "mens",
+              element: <Mens />
             },
             {
-              path:"kids",
-              element:<Kids />
+              path: "kids",
+              element: <Kids />
             },
             {
-              path:"create-product",
-              element:<CreateProduct />
+              path: "cart",
+              element: <Cart />
+            },
+            {
+              path: "create-product",
+              element: <CreateProduct />
             }
           ]
         },

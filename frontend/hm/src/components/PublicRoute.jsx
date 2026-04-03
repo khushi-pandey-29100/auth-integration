@@ -5,7 +5,7 @@ const PublicRoute = () => {
     let {user}= useSelector((state)=>state.auth);
 
     if(user){
-        return <Navigate to="/home" />
+        return <Navigate to="/home" replace />
     }
   return (
     <Outlet />

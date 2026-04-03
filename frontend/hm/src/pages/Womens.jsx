@@ -1,64 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../config/axiosInstance";
+import ProductCard from "../components/ProductCard";
 
 const Womens = () => {
+
   const [products, setProducts] = useState([]);
 
-  const getAllProducts = async () => {
+  const getProducts = async () => {
     try {
-      const res = await axiosInstance.get("product?category=WOMENS", {
-        withCredentials: true,
-      });
-      if (res) setProducts(res.data.products);
+
+      const res = await axiosInstance.get(
+        "/product?category=WOMENS"
+      );
+
+      setProducts(res.data.products);
+
     } catch (error) {
-      console.log("Error fetching WOMENS products:", error);
+      console.log(error);
     }
   };
 
   useEffect(() => {
-    getAllProducts();
+    getProducts();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">Womens Products</h1>
-        {products.length === 0 ? (
-          <p className="text-gray-500">No products available.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
-              >
-                <img
-                  src={product.images[0]}
-                  alt={product.productName}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h2 className="text-lg font-semibold mb-1">
-                    {product.productName}
-                  </h2>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {product.description}
-                  </p>
-                  <p className="font-medium">
-                    Price: {product.price.currency} {product.price.amount}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Sizes: {product.sizes.join(", ")}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Colors: {product.colors.join(", ")}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div>
+
+      {/* Hero */}
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold mb-2">Women</h1>
+        <p className="text-gray-500">
+          Discover the latest women's fashion trends.
+        </p>
       </div>
+
+      {/* Product Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {products.map((product) => (
+          <ProductCard
+            key={product._id}
+            product={product}
+          />
+        ))}
+      </div>
+
     </div>
   );
 };

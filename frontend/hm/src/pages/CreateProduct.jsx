@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { axiosInstance } from "../config/axiosInstance";
 
@@ -20,240 +20,231 @@ const CreateProduct = () => {
       category: "KIDS",
       sizes: [],
       colors: [""],
-      images: [""],
+      images: [],
       user_id: FIXED_USER_ID,
     },
   });
 
+  const [previewImages, setPreviewImages] = useState([]);
+
+  const handlePreview = (files) => {
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
+      setPreviewImages(fileArray);
+    } else {
+      setPreviewImages([]);
+    }
+  };
+
   const onSubmit = async (data) => {
-    console.log("form ka data---?", data)
     try {
-      let res = await axiosInstance.post("product/create", data , {
+      const formData = new FormData();
+      formData.append("productName", data.productName);
+      formData.append("description", data.description);
+      formData.append("currency", data.currency);
+      formData.append("amount", data.amount);
+      formData.append("category", data.category);
+      formData.append("user_id", FIXED_USER_ID);
+
+      // Sizes
+      if (data.sizes) {
+        data.sizes.forEach((size) => formData.append("sizes", size));
+      }
+
+      // Colors
+      if (data.colors && data.colors.length > 0) {
+        const colorsArray = data.colors[0]
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean);
+        colorsArray.forEach((color) => formData.append("colors", color));
+      }
+
+      // Images
+      const files = data.images;
+      if (!files || files.length === 0) {
+        alert("Please select images");
+        return;
+      }
+      for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i]);
+      }
+
+      const res = await axiosInstance.post("product/create", formData, {
         withCredentials: true,
       });
-      if(res){
-        alert('product created')
-        reset()
+
+      if (res) {
+        alert("Product created successfully");
+        reset();
+        setPreviewImages([]);
       }
     } catch (error) {
-      console.log("error in cp api->", error);
+      console.log("Error creating product:", error);
+      alert("Failed to create product. Check console for details.");
     }
   };
 
   const selectedSizes = watch("sizes", []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-start justify-center py-10">
-      <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-semibold mb-6 text-center">
-          Create Product
-        </h1>
+    <div className="min-h-screen bg-gray-50 flex justify-center py-12 px-4">
+      <div className="w-full max-w-5xl bg-white shadow-xl rounded-xl p-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-wide">Create New Product</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Add a new product to your store catalogue
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Product name */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+
+          {/* PRODUCT DETAILS */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter product name"
-              {...register("productName", {
-                required: "Product name is required",
-              })}
-            />
-            {errors.productName && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.productName.message}
-              </p>
-            )}
-          </div>
+            <h2 className="text-lg font-semibold mb-4 border-b pb-2">Product Information</h2>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              rows={4}
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Describe your product"
-              {...register("description", {
-                required: "Description is required",
-              })}
-            />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-sm font-medium">Product Name</label>
+                <input
+                  type="text"
+                  {...register("productName", { required: true })}
+                  className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+                  placeholder="Oversized Hoodie"
+                />
+              </div>
 
-          {/* Price (nested object) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Currency
-              </label>
-              <select
-                className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                {...register("currency", {
-                  required: "Currency is required",
-                })}
-              >
-                <option value="INR">INR</option>
-                <option value="USD">USD</option>
-              </select>
-              {errors.price?.currency && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.price.currency.message}
-                </p>
-              )}
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter price"
-                {...register("amount", {
-                  required: "Price amount is required",
-                  min: { value: 0, message: "Price must be positive" },
-                })}
-              />
-              {errors.price?.amount && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.price.amount.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              {...register("category", {
-                required: "Category is required",
-              })}
-            >
-              <option value="MENS">MENS</option>
-              <option value="WOMENS">WOMENS</option>
-              <option value="KIDS">KIDS</option>
-            </select>
-            {errors.category && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.category.message}
-              </p>
-            )}
-          </div>
-
-          {/* Sizes (enum array) */}
-          <div>
-            <span className="block text-sm font-medium text-gray-700 mb-1">
-              Sizes
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              {[ "S", "M", "L", "XL", "XXL"].map((size) => (
-                <label
-                  key={size}
-                  className="flex items-center space-x-2 text-sm"
+              <div>
+                <label className="text-sm font-medium">Category</label>
+                <select
+                  {...register("category", { required: true })}
+                  className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
                 >
+                  <option value="MENS">Mens</option>
+                  <option value="WOMENS">Womens</option>
+                  <option value="KIDS">Kids</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="text-sm font-medium">Description</label>
+              <textarea
+                rows={4}
+                {...register("description", { required: true })}
+                className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+                placeholder="Write product details..."
+              />
+            </div>
+          </div>
+
+          {/* PRICE */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 border-b pb-2">Pricing</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-sm font-medium">Currency</label>
+                <select
+                  {...register("currency")}
+                  className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+                >
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Price</label>
+                <input
+                  type="number"
+                  {...register("amount", { required: true })}
+                  className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+                  placeholder="999"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SIZES */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 border-b pb-2">Sizes</h2>
+            <div className="flex gap-6">
+              {["S","M","L","XL","XXL"].map((size) => (
+                <label key={size} className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     value={size}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                     {...register("sizes")}
+                    className="accent-black"
                   />
-                  <span>{size}</span>
+                  {size}
                 </label>
               ))}
             </div>
-            {errors.sizes && (
-              <p className="mt-1 text-sm text-red-500">
-                Select at least one size
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              Selected: {selectedSizes?.join(", ") || "None"}
-            </p>
           </div>
 
-          {/* Colors */}
+          {/* COLORS */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Colors (comma separated)
-            </label>
+            <h2 className="text-lg font-semibold mb-4 border-b pb-2">Colors</h2>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g. red, blue, black"
-              {...register("colors.0", {
-                required: "At least one color is required",
-              })}
-              onBlur={(e) => {
-                // Split comma separated colors into array for submit
-                const value = e.target.value;
-                const colors = value
-                  .split(",")
-                  .map((c) => c.trim())
-                  .filter(Boolean);
-                // keep first as string display; actual array created in onSubmit
-              }}
+              {...register("colors.0", { required: true })}
+              placeholder="red, black, blue"
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
             />
-            {errors.colors?.[0] && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.colors[0].message}
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              You can also later map this to a tags/chips UI.
-            </p>
           </div>
 
-          {/* Images */}
+          {/* IMAGES */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image URLs (comma separated)
+            <h2 className="text-lg font-semibold mb-4 border-b pb-2">Product Images</h2>
+
+            <label className="border-2 border-dashed rounded-lg flex flex-col items-center justify-center py-10 cursor-pointer hover:bg-gray-50 transition">
+                {previewImages.length > 0 ? (
+                <div className="text-sm text-gray-700">
+                  {previewImages.join(", ")}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Upload product images</p>
+              )}
+  
+            
+              <input
+                type="file"
+                multiple
+                {...register("images", {
+                  required: true,
+                  onChange: (e) => handlePreview(e.target.files),
+                })}
+                className="hidden"
+              />
             </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g. https://..., https://..."
-              {...register("images.0", {
-                required: "At least one image URL is required",
-              })}
-            />
-            {errors.images?.[0] && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.images[0].message}
-              </p>
-            )}
+
+            {/* Preview Images */}
+            {/* {previewImages.length > 0 && (
+              <div className="mt-4 flex gap-4 flex-wrap">
+                {previewImages.map((src, index) => (
+                  <img
+                    key={index}
+                    src={src}
+                    alt={`preview ${index}`}
+                    className="w-24 h-24 object-cover rounded-lg border"
+                  />
+                ))}
+              </div>
+            )} */}
           </div>
 
-          {/* Hidden user_id */}
-          <input
-            type="hidden"
-            value={FIXED_USER_ID}
-            {...register("user_id", { required: true })}
-          />
-
-          {/* Submit */}
+          {/* SUBMIT */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+            className="w-full bg-black text-white py-3 rounded-lg hover:opacity-90 transition font-medium"
           >
-            {isSubmitting ? "Creating product..." : "Create Product"}
+            {isSubmitting ? "Creating Product..." : "Create Product"}
           </button>
+
         </form>
       </div>
     </div>

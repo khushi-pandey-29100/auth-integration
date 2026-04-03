@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { router as authRoutes } from "./routes/auth.routes.js";
 import { router as productRoutes } from "./routes/product.routes.js";
 import morgan from "morgan";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 connectDB(); // call after dotenv.config()
 
@@ -19,6 +20,7 @@ app.use(express.urlencoded({extended:true}));
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(errorMiddleware);
 
 app.use(cors({
      origin: "http://localhost:5173", 
@@ -38,6 +40,10 @@ app.get("/email-page",(req,res)=>{
 
 app.use("/api/auth", authRoutes);
 app.use("/api/product", productRoutes);
+
+app.use(errorMiddleware);
+
+console.log("PRIVATE KEY:", process.env.IMAGEKIT_PRIVATE_KEY);
 
 app.listen(3000, () => {
     console.log("server is running on port 3000");

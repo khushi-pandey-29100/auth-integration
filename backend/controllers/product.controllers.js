@@ -63,34 +63,30 @@ export const createProductController = async (req, res) => {
 };
 
 export const getAllProductsController = async (req, res) => {
-    try {
-        let cat= req.query.category;
-        console.log("category",cat);
+  try {
+    const { category } = req.query;
 
-        let allproducts;
+    let filter = {};
 
-        if(cat){
-            allproducts=  await ProductModel.find({
-            category:cat,
-            })
-        } 
-        if(!cat){
-            allproducts = await ProductModel.find();
-        }
-
-        return res.status(200).json({
-            message: "all products fetched",
-            products: allproducts,
-        });
-
-    } catch (error) {
-        console.log("Error in fetching products", error);
-        return res.status(500).json({
-            message: "internal server error",
-            error,
-        })
+    if (category) {
+      filter.category = category;
     }
-}
+
+    const allproducts = await ProductModel.find(filter);
+
+    return res.status(200).json({
+      message: "All products fetched",
+      products: allproducts,
+    });
+
+  } catch (error) {
+    console.log("Error in fetching products", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+};
 
 export const getSingleProductController = async(req,res)=>{
     try {

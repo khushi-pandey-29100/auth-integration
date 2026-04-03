@@ -23,6 +23,7 @@ const productSchema = new mongoose.Schema({
         type:String, 
         enum:["MENS",'WOMENS',"KIDS"], 
         default:"KIDS", 
+        required:true,
     }, 
     sizes:[ 
         { 

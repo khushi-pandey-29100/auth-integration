@@ -1,12 +1,14 @@
 import React from "react";
-
 import { useDispatch } from "react-redux";
 import { setUser } from "../features/AuthSlice";
 import { axiosInstance } from "../config/axiosInstance";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Login = ({ settoggle }) => {
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -15,103 +17,109 @@ const Login = ({ settoggle }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
-   try {
-         let res = await axiosInstance.post("auth/login", data, {
-           withCredentials: true,
-         });
-   
-         if (res) {
-           dispatch(setUser(res.data.user));
-         }
-       } catch (error) {
-         console.log("error in user login", error);
-       }
+    try {
+      const res = await axiosInstance.post(
+        "auth/login",
+        { email: data.email, password: data.password },
+        { withCredentials: true }
+      );
+
+      if (res.data) {
+        dispatch(setUser(res.data.user));
+        navigate("/home");
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Login failed");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-semibold mb-6 text-center">Login</h1>
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* ---------------- LEFT SIDE IMAGE ---------------- */}
+      <div className="w-full md:w-1/2 h-full md:h-auto relative">
+        <img
+          src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx2aXN1YWwtc2VhcmNofDF8fHxlbnwwfHx8fHw%3D"
+          alt="Fashion Illustration"
+          className="w-full h-[800px] object-cover object-center"
+        />
+        {/* Overlay for text */}
+        <div className="absolute inset-0 bg-black/30 flex flex-col justify-center items-center text-white px-6">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center">
+            Welcome Back
+          </h1>
+          <p className="text-sm md:text-lg text-center">
+            Sign in to continue exploring fashion trends
+          </p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+      {/* ---------------- RIGHT SIDE FORM ---------------- */}
+      <motion.div
+        className="w-full md:w-1/2 flex items-center justify-center bg-gray-100"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <div className="w-full max-w-md bg-white shadow-2xl rounded-xl p-8 md:p-10 m-6 md:m-0">
+          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+            Login to Your Account
+          </h2>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+                {...register("email", { required: "Email is required" })}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Password</label>
+              <input
+                type="password"
+                placeholder="Enter password"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+                {...register("password", { required: "Password is required" })}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition transform hover:scale-105 shadow-md"
             >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="you@example.com"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address",
-                },
-              })}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+              {isSubmitting ? "Logging in..." : "Login"}
+            </button>
 
-          {/* Password */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter your password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              })}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
-          >
-            {isSubmitting ? "Logging in..." : "Login"}
-          </button>
-
-          <div>
-            <p>
+            {/* Toggle Register */}
+            <p className="text-sm text-center text-gray-600">
               Don't have an account?{" "}
               <span
                 onClick={() => settoggle((prev) => !prev)}
-                className="text-blue-600 cursor-pointer"
+                className="text-blue-600 font-medium cursor-pointer hover:underline"
               >
                 Register here
               </span>
             </p>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 };

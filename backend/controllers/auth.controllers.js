@@ -2,17 +2,15 @@ import { UserModel } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendMail } from "../services/mail.service.js";
-import { json } from "express";
+import { CustomError } from "../utils/CustonError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-export const registerController = async (req, res) => {
-    try {
+export const registerController = asyncHandler(async (req, res) => {
         console.log("------>", req.body)
         let { username, email, mobile, password } = req.body;
 
         if (!username || !email || !mobile || !password) {
-            return res.status(401).json({
-                message: "all filds are required",
-            })
+            throw new CustomError("all fields are required",400);
         }
 
         let hashPass = await bcrypt.hash(password, 10);
@@ -25,10 +23,7 @@ export const registerController = async (req, res) => {
         })
 
         if (!newUser) {
-            return res.status(401).json({
-                message: "something went wrong",
-                error
-            })
+            throw new CustomError("user registeration failed",404)
         }
 
         let token = jwt.sign({ id: newUser._id }, process.env.JWT_Secret_key, { expiresIn: "1h" });
@@ -41,13 +36,8 @@ export const registerController = async (req, res) => {
             message: "user registered successfully",
             user: newUser,
         })
-    } catch (error) {
-        console.log("error in user registeration->", error)
-        return res.status(500).json({
-            message: "register controller error",
-        })
-    }
-}
+});
+
 export const loginController = async (req, res) => {
     try {
         let { email, password } = req.body;
