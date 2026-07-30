@@ -23,10 +23,9 @@ app.use(express.json());
 app.use(errorMiddleware);
 
 app.use(cors({
-     origin: "http://localhost:5173", 
-     credentials: true 
-    })
-);
+  origin: "https://auth-integration-theta.vercel.app",
+  credentials: true,
+}));
 
 app.use(morgan("dev"));
 
