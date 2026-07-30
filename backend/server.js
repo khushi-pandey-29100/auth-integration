@@ -23,15 +23,19 @@ app.use(cookieParser());
 app.use(express.json());
 
 const allowedOrigins = [
+const allowedOrigins = [
   "http://localhost:5173",
   "https://auth-integration-theta.vercel.app",
-  "https://auth-integration-dk56obqb7-khushi-pandey-29100s-projects.vercel.app"
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS not allowed"));
