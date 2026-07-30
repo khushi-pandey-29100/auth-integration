@@ -1,6 +1,9 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api/",
+  baseURL: "https://auth-integration-backend.onrender.com/api/",
   withCredentials: true,
 });
+
+// https://auth-integration-backend.onrender.com
+
