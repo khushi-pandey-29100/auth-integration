@@ -16,15 +16,16 @@ const app = express();
 
 app.set("view engine","ejs");
 
+
 app.use(express.urlencoded({extended:true}));
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(errorMiddleware);
 
 const allowedOrigins = [
   "http://localhost:5173",
   "https://auth-integration-theta.vercel.app",
+  "https://auth-integration-a2et1udqx-khushi-pandey-29100s-projects.vercel.app"
 ];
 
 app.use(
