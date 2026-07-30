@@ -23,7 +23,6 @@ app.use(cookieParser());
 app.use(express.json());
 
 const allowedOrigins = [
-const allowedOrigins = [
   "http://localhost:5173",
   "https://auth-integration-theta.vercel.app",
 ];
