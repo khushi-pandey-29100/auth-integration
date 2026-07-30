@@ -22,10 +22,24 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(errorMiddleware);
 
-app.use(cors({
-  origin: "https://auth-integration-theta.vercel.app",
-  credentials: true,
-}));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://auth-integration-theta.vercel.app",
+  "https://auth-integration-a2et1udqx-khushi-pandey-29100s-projects.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(morgan("dev"));
 
